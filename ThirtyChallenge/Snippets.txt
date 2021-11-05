@@ -1,0 +1,64 @@
+﻿var msg3 = "Get outahere!";
+var msg2 = "Nothingtosee?";
+var msg1 = "Hello, World!";
+
+void TryOtherThingy(string msg)
+{
+    var seed = 0;
+    var ss = new List<int>();
+    foreach (var c in msg.ToCharArray())
+    {
+        var r = new Random(seed);
+        var cr = Convert.ToChar(r.Next(char.MinValue, char.MaxValue));
+        while (cr != c)
+        {
+            seed++;
+            r = new Random(seed);
+            cr = Convert.ToChar(r.Next(char.MinValue, char.MaxValue));
+        }
+        ss.Add(seed);
+        //Console.WriteLine($"'{c}' seed:{seed}");
+    }
+    Console.WriteLine($"{{{string.Join(",", ss)} }}");
+}
+void TryOtherThingyWithIncrease(string msg)
+{
+    var seed = 0;
+    var ss = new List<(int seed, int times)>();
+    char GetNthRandChar(Random r, int n)
+    {
+        char c;
+        do
+        {
+            c = Convert.ToChar(r.Next(char.MinValue, char.MaxValue));
+            n--;
+        } while (n >= 0);
+        return c;
+    }
+    foreach (var c in msg.ToCharArray().Select((c, i) => (c, i)))
+    {
+        var r = new Random(seed);
+        var cr = GetNthRandChar(r, c.i);
+        while (cr != c.c)
+        {
+            seed++;
+            r = new Random(seed);
+            cr = GetNthRandChar(r, c.i);
+        }
+        ss.Add((seed, c.i));
+        Console.WriteLine($"'{c}' seed:{seed}");
+    }
+    var initial = ss.First().seed;
+    Console.WriteLine($"{{{string.Join(",", ss.Select(c => c.seed))} }}");
+    Console.WriteLine($"{{{string.Join(",", ss.Select(c => c.seed - initial))} }}");
+}
+void DoTheThingy()
+{
+    Console.WriteLine(msg1);
+    var z = msg1.ToCharArray().Zip(msg2.ToCharArray(), (c1, c2) => (c1, c2));
+    //Console.WriteLine(string.Join("\n", z.Select(p => $"[{p.c1} {p.c2} ({p.c2-p.c1:X2})]")));
+    Console.WriteLine($"{{ {string.Join(",", z.Select(p => p.c2 - p.c1))} }}");
+}
+//DoTheThingy();
+//TryOtherThingy(msg1);
+//TryOtherThingyWithIncrease(msg1);
