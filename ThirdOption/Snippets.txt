@@ -1,0 +1,250 @@
+﻿void WriteItVariableW(string msg, Dictionary<char, (int w, int[] bm)> letters)
+{
+    var ch = 6;
+    var numCols = Console.WindowWidth;
+    var writable = string.Join("", msg.Where(c => letters.ContainsKey(c)));
+    var (c,r) = (Console.WindowLeft, Console.WindowTop);
+    var bits = writable.Select(c => letters[c]);
+
+    foreach (var cm in bits)
+    {
+        if (c + cm.w > numCols)
+        {
+            c = Console.WindowLeft;
+            r += ch;
+        }
+        foreach (var (i, line) in cm.bm.Select((l, i) => (i, l)))
+        {
+            var s = string.Join("", Enumerable.Range(0, cm.w)
+                .Select(b => (1 << cm.w-1) >> b)
+                .Select(m => (line & m) != 0 ? '#' : ' '));
+            Console.SetCursorPosition(c, r + i);
+            Console.Write(s);
+        }
+        c += cm.w+1;
+    }
+}
+
+
+void RewriteDict(Dictionary<char, (int w, int[] bm)> letters)
+{
+    var sb = new StringBuilder();
+    sb.Append("{");
+    foreach(var kw in letters.OrderBy(kv => kv.Value.w))
+    {
+        var k = kw.Key;
+        //sb.Append("\t");
+        var w = letters[k].w;
+        var map = letters[k].bm.Aggregate(0L, (r, v) => (r << w) | (uint)v);
+        var binMap = Convert.ToString(map, 2);
+        sb.Append($" {{ '{k}', ({w}, 0x{map:x}) }}, ");
+        //sb.Append("//{binMap}");
+        //sb.Append("\n");
+    }
+    sb.Append("}");
+
+
+    Console.Write(sb.ToString());
+}
+void WriteIt(string msg, Dictionary<char, int[]> letters)
+{
+    var cw = 6;
+    var ch = 6;
+    var d = (w: Console.WindowWidth, h: Console.WindowHeight);
+    var maxCols = d.w / (cw + 1);
+    var maxLines = d.h / (ch + 1);
+    var writable = string.Join("", msg.Where(c => letters.ContainsKey(c)));
+    var c = Console.WindowLeft;
+    var r = Console.WindowTop;
+    var bits = writable.Select(c => letters[c]);
+    do
+    {
+        var curr = bits.Take(maxCols).ToArray();
+        bits = bits.Skip(maxCols);
+        //Console.SetCursorPosition(c, r);
+        foreach (var i in Enumerable.Range(0, curr.Length))
+        {
+            foreach (var x in Enumerable.Range(0, cw * ch).Select(v => (b: v / cw, l: v % cw)))
+            {
+                var m = (1 << cw - 1) >> x.b;
+                var v = (curr[i][x.l] & m) != 0 ? '#' : ' ';
+                Console.SetCursorPosition(c + (i * (cw + 1) + x.b), r + x.l);
+                Console.Write(v);
+            }
+        }
+        r += ch;
+
+    } while (bits.Any());
+}
+var letters = new Dictionary<char, int[]>
+{
+    {'H', new[]{ 0b100001,
+                 0b100001,
+                 0b111111,
+                 0b100001,
+                 0b100001,
+                 0b000000,
+                 } },
+    {'e', new[]{ 0b000000,
+                 0b011100,
+                 0b100010,
+                 0b101000,
+                 0b011100,
+                 0b000000,
+                 } },
+    {'l', new[]{ 0b000000,
+                 0b110000,
+                 0b010000,
+                 0b010000,
+                 0b011000,
+                 0b000000,
+                 } },
+    {'o', new[]{ 0b000000,
+                 0b011100,
+                 0b100010,
+                 0b100010,
+                 0b011100,
+                 0b000000,
+                 } },
+    {',', new[]{ 0b000000,
+                 0b000000,
+                 0b000000,
+                 0b000000,
+                 0b001000,
+                 0b010000,
+                 } },
+    {' ', new[]{ 0b000000,
+                 0b000000,
+                 0b000000,
+                 0b000000,
+                 0b000000,
+                 0b000000,
+                 } },
+    {'W', new[]{ 0b100001,
+                 0b100001,
+                 0b101101,
+                 0b101101,
+                 0b010010,
+                 0b000000,
+                 } },
+    {'r', new[]{ 0b000000,
+                 0b101100,
+                 0b110010,
+                 0b100000,
+                 0b100000,
+                 0b000000,
+                 } },
+    {'d', new[]{ 0b000110,
+                 0b000100,
+                 0b011100,
+                 0b100100,
+                 0b011100,
+                 0b000000,
+                 } },
+    {'!', new[]{ 0b001000,
+                 0b001000,
+                 0b001000,
+                 0b001000,
+                 0b000000,
+                 0b001000,
+                 } },
+
+};
+var letters2W = new Dictionary<char,(int w, int[]bm)>
+{
+    {'H',
+        (6, new[]{ 
+            0b100001,
+            0b100001,
+            0b111111,
+            0b100001,
+            0b100001,
+            0b000000,}) },
+    {'e',
+        (5, new[]{ 
+            0b00000,
+            0b01110,
+            0b10001,
+            0b10100,
+            0b01110,
+            0b00000,
+                 }) },
+    {'l',
+        (3, new[]{ 
+            0b000,
+            0b110,
+            0b010,
+            0b010,
+            0b011,
+            0b000,
+                 }) },
+    {'o',
+        (5, new[]{ 
+            0b00000,
+            0b01110,
+            0b10001,
+            0b10001,
+            0b01110,
+            0b00000,
+                 }) },
+    {',',
+        (2, new[]{ 
+            0b00,
+            0b00,
+            0b00,
+            0b00,
+            0b01,
+            0b10,
+                 }) },
+    {' ',
+        (4, new[]{ 
+            0b0000,
+            0b0000,
+            0b0000,
+            0b0000,
+            0b0000,
+            0b0000,
+                 }) },
+    {'W', 
+        (6, new[]{ 
+            0b100001,
+            0b100001,
+            0b101101,
+            0b101101,
+            0b010010,
+            0b000000,
+                 }) },
+    {'r',
+        (5, new[]{ 
+            0b00000,
+            0b10110,
+            0b11001,
+            0b10000,
+            0b10000,
+            0b00000,
+                 }) },
+    {'d',
+        (5, new[]{ 
+            0b00011,
+            0b00010,
+            0b01110,
+            0b10010,
+            0b01110,
+            0b00000,
+                 }) },
+    {'!', 
+        (1, new[]{ 
+            0b1,
+            0b1,
+            0b1,
+            0b1,
+            0b0,
+            0b1,
+                 }) },
+
+};
+
+
+//WriteIt(msg3, letters);
+//WriteItVariableW(msg3, letters2W);
+//RewriteDict(letters2W);
