@@ -1,7 +1,7 @@
 
 This solutions contains 3 projects:
 * ThirtyChallenge
-* FollowChallenge
+* FollowChallenge/AltChallenge(old name of project)
 * ThirdOption
 
 I started developing the challenge with VS2022 preview & was lucky that 1st non preview VS2022 was release same week ^_^'
